@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Role } from 'src/roles/schemas/role.schema';
 import { getObjectId } from 'src/utils/util-functions';
 import { UsersGetDto } from '../dtos/user-get.dto';
 import { User } from '../schemas/user.schema';
@@ -17,6 +18,25 @@ export class UserRepository {
 
   save(user: User) {
     return user.save();
+  }
+
+  async updateRole(id: string, role: Role, paths: string[]) {
+    const query = paths.reduce((acc, path) => {
+      acc[`roles.$.${path}`] = role[path];
+      return acc;
+    }, {});
+
+    await this.userModel.updateMany(
+      { roles: { $elemMatch: { _id: getObjectId(id) } } },
+      { $set: query },
+    );
+  }
+
+  async removeRole(roleId: string) {
+    await this.userModel.updateOne(
+      { roles: { $elemMatch: { _id: getObjectId(roleId) } } },
+      { $pull: { roles: { _id: getObjectId(roleId) } } },
+    );
   }
 
   async deleteById(id: string) {

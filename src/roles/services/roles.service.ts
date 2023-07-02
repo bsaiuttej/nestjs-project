@@ -1,12 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { keyBy, uniq } from 'lodash';
+import { UserRepository } from 'src/users/repositories/user.repository';
 import { RolePostDto, RolesGetDto } from '../dtos/roles.dto';
 import { RoleRepository } from '../repositories/role.repository';
 import { Permissions } from '../schemas/permissions';
 
 @Injectable()
 export class RolesService {
-  constructor(private readonly roleRepo: RoleRepository) {}
+  constructor(
+    private readonly roleRepo: RoleRepository,
+    private readonly userRepo: UserRepository,
+  ) {}
 
   async createRole(body: RolePostDto) {
     const permissions = this.checkPermissions(body.permissions);
@@ -47,7 +51,12 @@ export class RolesService {
       };
     });
 
-    return this.roleRepo.save(role);
+    const paths = role.modifiedPaths();
+    const res = await this.roleRepo.save(role);
+    if (paths.length) {
+      await this.userRepo.updateRole(id, role, paths);
+    }
+    return res;
   }
 
   checkPermissions(permissions: string[]) {
@@ -66,6 +75,7 @@ export class RolesService {
     }
 
     await this.roleRepo.deleteById(id);
+    await this.userRepo.removeRole(id);
     return { message: 'Role deleted successfully' };
   }
 
