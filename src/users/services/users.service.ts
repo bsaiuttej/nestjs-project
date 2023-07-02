@@ -15,7 +15,7 @@ export class UsersService {
   async createUser(body: CreateUserDto) {
     const existingEmail = await this.userRepo.countByEmail(body.email);
     if (existingEmail) {
-      throw new BadRequestException(`There is already a user with email ${body.email}`);
+      throw new BadRequestException(`There is already a user with this email: ${body.email}`);
     }
 
     const roles = await this.roleRepo.findByIds(body.roleIds);
@@ -38,7 +38,7 @@ export class UsersService {
 
     const existingEmail = await this.userRepo.countByEmail(body.email, id);
     if (existingEmail) {
-      throw new BadRequestException(`There is already a user with email ${body.email}`);
+      throw new BadRequestException(`There is already a user with this email: ${body.email}`);
     }
 
     const roles = await this.roleRepo.findByIds(body.roleIds);
