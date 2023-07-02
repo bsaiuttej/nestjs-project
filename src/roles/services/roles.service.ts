@@ -12,7 +12,9 @@ export class RolesService {
     const permissions = this.checkPermissions(body.permissions);
     const existingName = await this.roleRepo.countByName(body.name);
     if (existingName) {
-      throw new BadRequestException(`Role with name ${body.name} already exists`);
+      throw new BadRequestException(
+        `There is already a role with the same name you have entered, '${body.name}'`,
+      );
     }
 
     const role = this.roleRepo.create(body);
@@ -30,7 +32,9 @@ export class RolesService {
 
     const existingName = await this.roleRepo.countByName(body.name, id);
     if (existingName) {
-      throw new BadRequestException(`Role with name ${body.name} already exists`);
+      throw new BadRequestException(
+        `There is already a role with the same name you have entered, '${body.name}'`,
+      );
     }
 
     const prevPermissions = keyBy(role.permissions, (v) => v.permissionId);
