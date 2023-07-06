@@ -51,12 +51,11 @@ export class RolesService {
       };
     });
 
-    const paths = role.modifiedPaths();
-    const res = await this.roleRepo.save(role);
-    if (paths.length) {
-      await this.userRepo.updateRole(id, role, paths);
-    }
-    return res;
+    if (!role.isModified()) return role;
+
+    await this.roleRepo.save(role);
+    await this.userRepo.updateRole(id, role);
+    return role;
   }
 
   checkPermissions(permissions: string[]) {

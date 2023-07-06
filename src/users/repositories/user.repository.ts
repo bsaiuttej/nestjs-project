@@ -20,15 +20,10 @@ export class UserRepository {
     return user.save();
   }
 
-  async updateRole(id: string, role: Role, paths: string[]) {
-    const query = paths.reduce((acc, path) => {
-      acc[`roles.$.${path}`] = role[path];
-      return acc;
-    }, {});
-
+  async updateRole(id: string, role: Role) {
     await this.userModel.updateMany(
       { roles: { $elemMatch: { _id: getObjectId(id) } } },
-      { $set: query },
+      { $set: { 'roles.$': role } },
     );
   }
 

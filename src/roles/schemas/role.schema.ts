@@ -16,7 +16,7 @@ const RolePermissionSchema = new MongooseSchema<RolePermission>(
 
 export const RoleCName = 'roles';
 
-@Schema({ id: true, collection: RoleCName, timestamps: true })
+@Schema({ id: true, collection: RoleCName })
 export class Role extends Document {
   @Prop({ required: true, trim: true })
   name: string;
