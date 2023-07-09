@@ -4,7 +4,7 @@ import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-
 export class RolePostDto {
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => value?.trim()?.toUpperCase())
   name: string;
 
   @IsNotEmpty()

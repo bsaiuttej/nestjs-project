@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ParseObjectIdPipe } from 'src/utils/pipes/parse-object-id.pipe';
+import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
 import { UsersGetDto } from '../dtos/user-get.dto';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user-post.dto';
 import { UsersService } from '../services/users.service';

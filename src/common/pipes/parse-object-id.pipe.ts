@@ -1,6 +1,7 @@
-import { BadRequestException, PipeTransform } from '@nestjs/common';
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import mongoose from 'mongoose';
 
+@Injectable()
 export class ParseObjectIdPipe implements PipeTransform {
   transform(value: any) {
     if (value instanceof mongoose.Types.ObjectId) {

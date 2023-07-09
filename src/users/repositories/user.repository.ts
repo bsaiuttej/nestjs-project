@@ -2,13 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Role } from 'src/roles/schemas/role.schema';
+import { LocalStore } from 'src/utils/local-store/local-store';
 import { getObjectId } from 'src/utils/util-functions';
 import { UsersGetDto } from '../dtos/user-get.dto';
 import { User } from '../schemas/user.schema';
 
+const UserLocalStoreName = 'user-local-store';
+
 @Injectable()
 export class UserRepository {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {}
+  private readonly userStore: LocalStore<User>;
+
+  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
+    this.userStore = LocalStore.create({
+      storeName: UserLocalStoreName,
+      fn: async (key: string) => {
+        return await this.userModel.findById(key).exec();
+      },
+    });
+  }
 
   create(data?: unknown) {
     const instance = new this.userModel(data);
@@ -16,26 +28,47 @@ export class UserRepository {
     return instance;
   }
 
-  save(user: User) {
-    return user.save();
+  async save(user: User) {
+    if (!user.isModified()) return user;
+
+    const result = await user.save();
+    this.userStore.set(result.id, result);
+    return result;
   }
 
-  async updateRole(id: string, role: Role) {
+  async updateRole(roleId: string, role: Role) {
+    const userIds = await this.findIdsByRoleId(roleId);
+
     await this.userModel.updateMany(
-      { roles: { $elemMatch: { _id: getObjectId(id) } } },
+      { roles: { $elemMatch: { _id: getObjectId(roleId) } } },
       { $set: { 'roles.$': role } },
     );
+
+    this.userStore.remove(userIds);
   }
 
   async removeRole(roleId: string) {
+    const userIds = await this.findIdsByRoleId(roleId);
+
     await this.userModel.updateOne(
       { roles: { $elemMatch: { _id: getObjectId(roleId) } } },
       { $pull: { roles: { _id: getObjectId(roleId) } } },
     );
+
+    this.userStore.remove(userIds);
   }
 
   async deleteById(id: string) {
     await this.userModel.deleteOne({ _id: id }).exec();
+
+    this.userStore.remove(id);
+  }
+
+  private async findIdsByRoleId(roleId: string) {
+    const users = await this.userModel
+      .find({ roles: { $elemMatch: { _id: getObjectId(roleId) } } }, { _id: 1 })
+      .exec();
+    return users.map((u) => u.id);
   }
 
   async countByEmail(email: string, excludeId?: string) {
@@ -44,8 +77,12 @@ export class UserRepository {
       .exec();
   }
 
+  findUserIdByCredentials(email: string) {
+    return this.userModel.findOne({ email: email.toLowerCase() }, { _id: 1, password: 1 }).exec();
+  }
+
   async findById(id: string) {
-    return this.userModel.findById(id).exec();
+    return this.userStore.get(id);
   }
 
   async find(query: UsersGetDto) {

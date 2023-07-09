@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { json } from 'express';
 import mongoose from 'mongoose';
 import { AppModule } from './app.module';
+import { storeMiddleWare } from './utils/request-store/request-store';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,9 +13,11 @@ async function bootstrap() {
       origin: req.header('origin'),
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      exposedHeaders: ['x-access-token'],
     });
   });
 
+  app.use(storeMiddleWare);
   app.use(json({ limit: '100mb' }));
 
   app.useGlobalPipes(

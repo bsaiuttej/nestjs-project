@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { RoleRepository } from 'src/roles/repositories/role.repository';
 import { UsersGetDto } from '../dtos/user-get.dto';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user-post.dto';
@@ -24,7 +23,6 @@ export class UsersService {
     }
 
     const user = this.userRepo.create(body);
-    user.password = await bcrypt.hash(body.password, 10);
     user.roles = roles;
 
     return this.userRepo.save(user);
@@ -51,7 +49,7 @@ export class UsersService {
     user.lastName = body.lastName;
     user.roles = roles;
     if (body.password) {
-      user.password = await bcrypt.hash(body.password, 10);
+      user.password = body.password;
     }
 
     return this.userRepo.save(user);
@@ -74,7 +72,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
     return user;
   }
 

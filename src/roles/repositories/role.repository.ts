@@ -20,9 +20,11 @@ export class RoleRepository {
       role.createdAt = new Date();
       role.updatedAt = new Date();
     }
+
     if (role.isModified()) {
       role.updatedAt = new Date();
     }
+
     return role.save();
   }
 

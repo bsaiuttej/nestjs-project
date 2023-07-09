@@ -1,24 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 
-export type RolePermission = {
+@Schema({ _id: false })
+export class RolePermission {
+  @Prop({ required: true })
   permissionId: string;
-  addedAt: Date;
-};
 
-const RolePermissionSchema = new MongooseSchema<RolePermission>(
-  {
-    permissionId: { type: String, required: true },
-    addedAt: { type: Date, required: true },
-  },
-  { _id: false },
-);
+  @Prop({ required: true })
+  addedAt: Date;
+}
+
+const RolePermissionSchema = SchemaFactory.createForClass(RolePermission);
 
 export const RoleCName = 'roles';
 
 @Schema({ id: true, collection: RoleCName })
 export class Role extends Document {
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, uppercase: true })
   name: string;
 
   @Prop({ default: [], type: [RolePermissionSchema] })
@@ -33,3 +31,5 @@ export class Role extends Document {
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
 RoleSchema.index({ name: 1 }, { unique: true });
+
+export const RoleSubSchema = SchemaFactory.createForClass(Role);
