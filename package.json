@@ -1,8 +1,8 @@
 {
-  "name": "nestjs-project",
+  "name": "nestjs-sample-project",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Simple NestJS project with MongoDB and JWT Authentication and some other features",
+  "author": "B SAI UTTEJ",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
