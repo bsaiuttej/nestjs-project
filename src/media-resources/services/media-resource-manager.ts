@@ -28,6 +28,10 @@ export class FindManyProps {
   typeIds?: string[];
   keys?: string[];
   notKeys?: string[];
+  orKeysIds?: {
+    keys: string[];
+    typeIds: string[];
+  };
 }
 
 @Injectable()
@@ -118,12 +122,25 @@ export class MediaResourceManager {
           ...(props.typeIds ? [{ typeId: { $in: props.typeIds.map(getObjectId) } }] : []),
           ...(props.keys ? [{ key: { $in: props.keys } }] : []),
           ...(props.notKeys ? [{ key: { $nin: props.notKeys } }] : []),
+          ...(props.orKeysIds
+            ? [
+                {
+                  $or: [
+                    ...(props.orKeysIds.keys ? [{ key: { $in: props.orKeysIds.keys } }] : []),
+                    ...(props.orKeysIds.typeIds
+                      ? [{ typeId: { $in: props.orKeysIds.typeIds.map(getObjectId) } }]
+                      : []),
+                  ],
+                },
+              ]
+            : []),
         ],
       })
       .exec();
   }
 
   async deleteMany(resources: MediaResource[]) {
+    if (!resources.length) return;
     await this.mediaResourceModel.deleteMany({ _id: { $in: resources.map((r) => r._id) } });
     await this.deleteFiles(resources.map((r) => r.key));
   }

@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { getObjectId } from 'src/utils/util-functions';
 import { RolesGetDto } from '../dtos/roles.dto';
 import { Role } from '../schemas/role.schema';
 
+export const UPDATE_ROLE_EVENT = 'UPDATE_ROLE_EVENT';
+export const DELETE_ROLE_EVENT = 'DELETE_ROLE_EVENT';
+
 @Injectable()
 export class RoleRepository {
-  constructor(@InjectModel(Role.name) private readonly roleModel: Model<Role>) {}
+  constructor(
+    @InjectModel(Role.name) private readonly roleModel: Model<Role>,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   create(data?: unknown) {
     const instance = new this.roleModel(data);
@@ -16,19 +23,22 @@ export class RoleRepository {
   }
 
   save(role: Role) {
+    if (!role.isModified()) return role;
+
+    role.updatedAt = new Date();
     if (role.isNew) {
       role.createdAt = new Date();
-      role.updatedAt = new Date();
     }
 
-    if (role.isModified()) {
-      role.updatedAt = new Date();
+    if (!role.isNew) {
+      this.eventEmitter.emitAsync(UPDATE_ROLE_EVENT, role._id, role);
     }
 
     return role.save();
   }
 
   async deleteById(id: string) {
+    this.eventEmitter.emitAsync(DELETE_ROLE_EVENT, id);
     await this.roleModel.deleteOne({ _id: getObjectId(id) }).exec();
   }
 

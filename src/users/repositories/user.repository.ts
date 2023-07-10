@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { DELETE_ROLE_EVENT, UPDATE_ROLE_EVENT } from 'src/roles/repositories/role.repository';
 import { Role } from 'src/roles/schemas/role.schema';
 import { LocalStore } from 'src/utils/local-store/local-store';
 import { getObjectId } from 'src/utils/util-functions';
@@ -36,7 +38,8 @@ export class UserRepository {
     return result;
   }
 
-  async updateRole(roleId: string, role: Role) {
+  @OnEvent(UPDATE_ROLE_EVENT, { async: true })
+  protected async updateRole(roleId: string, role: Role) {
     const userIds = await this.findIdsByRoleId(roleId);
 
     await this.userModel.updateMany(
@@ -47,7 +50,8 @@ export class UserRepository {
     this.userStore.remove(userIds);
   }
 
-  async removeRole(roleId: string) {
+  @OnEvent(DELETE_ROLE_EVENT, { async: true })
+  protected async removeRole(roleId: string) {
     const userIds = await this.findIdsByRoleId(roleId);
 
     await this.userModel.updateOne(
@@ -83,6 +87,14 @@ export class UserRepository {
 
   async findById(id: string) {
     return this.userStore.get(id);
+  }
+
+  async findMetaDataByIds(ids: string[]) {
+    if (!ids.length) return [];
+
+    return this.userModel
+      .find({ _id: { $in: ids } }, { _id: 1, firstName: 1, lastName: 1, email: 1, profileImage: 1 })
+      .exec();
   }
 
   async find(query: UsersGetDto) {

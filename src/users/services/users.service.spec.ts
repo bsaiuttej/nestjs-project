@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { compare } from 'bcrypt';
 import { RoleRepository } from 'src/roles/repositories/role.repository';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user-post.dto';
 import { UserRepository } from '../repositories/user.repository';
@@ -95,7 +94,7 @@ describe('UsersService', () => {
       expect(user.firstName).toEqual(body.firstName);
       expect(user.lastName).toEqual(body.lastName);
 
-      const checkPassword = await compare(body.password, user.password);
+      const checkPassword = body.password === user.password;
       expect(checkPassword).toBeTruthy();
     });
 

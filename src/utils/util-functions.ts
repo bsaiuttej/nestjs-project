@@ -25,3 +25,7 @@ export function getObjectId(id: any) {
     throw new UnprocessableEntityException('Invalid ID');
   }
 }
+
+export function newObjectId() {
+  return new mongoose.Types.ObjectId().toString();
+}

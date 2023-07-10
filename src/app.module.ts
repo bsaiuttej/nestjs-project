@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { FeedModule } from './feed/feed.module';
 import { MediaResourceModule } from './media-resources/media-resource.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
@@ -36,11 +38,13 @@ import { mongoConfig } from './utils/mongoose.config';
       }).unknown(true),
     }),
     MongooseModule.forRoot(mongoConfig().MONGO_URI),
+    EventEmitterModule.forRoot(),
     CommonModule,
     RolesModule,
     UsersModule,
     MediaResourceModule,
     AuthModule,
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
