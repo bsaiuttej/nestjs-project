@@ -12,6 +12,8 @@ import { MediaResourceModule } from './media-resources/media-resource.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
 import { mongoConfig } from './utils/mongoose.config';
+import { TasksModule } from './tasks/tasks.module';
+import { UniqueIdGeneratorModule } from './unique-id-generator/unique-id-generator.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { mongoConfig } from './utils/mongoose.config';
     MediaResourceModule,
     AuthModule,
     FeedModule,
+    TasksModule,
+    UniqueIdGeneratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
